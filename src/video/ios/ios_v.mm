@@ -148,6 +148,8 @@ void VideoDriver_iOS::Stop()
  */
 std::optional<std::string_view> VideoDriver_iOS::Start(const StringList &param)
 {
+	fwrite("OpenTTD iOS: video driver Start\n", 1, 31, stderr);
+	fflush(stderr);
 	os_log(OS_LOG_DEFAULT, "OpenTTD iOS: video driver Start");
 	if (this->gl_ready) return "Already started";
 

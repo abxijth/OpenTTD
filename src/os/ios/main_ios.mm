@@ -126,6 +126,8 @@ std::string NSStringToCpp(NSString *str)
 			RedirectLogToFile();
 
 			CrashLog::InitialiseCrashLog();
+			fwrite("OpenTTD iOS: crash log handlers installed\n", 1, 42, stderr);
+			fflush(stderr);
 
 			SetRandomSeed(time(nullptr));
 
@@ -133,15 +135,24 @@ std::string NSStringToCpp(NSString *str)
 
 			/* iOS has no traditional argv, so construct one. The (read-only)
 			 * application bundle path is used as the program name; the actual
-			 * game data is picked up from the bundle Data directory. */
+			 * game data is picked up from the bundle Data directory.
+			 * Verbose driver/misc debug is enabled so every startup step is
+			 * visible in openttd.log on first launch. */
 			std::vector<std::string> args;
 			args.emplace_back(NSStringToCpp([ [ NSBundle mainBundle ] bundlePath ]));
+			args.emplace_back("-d");
+			args.emplace_back("driver=3,misc=2");
 
 			std::vector<std::string_view> params;
 			for (const auto &arg : args) params.emplace_back(arg);
 
+			fwrite("OpenTTD iOS: calling openttd_main\n", 1, 34, stderr);
+			fflush(stderr);
 			os_log(OS_LOG_DEFAULT, "OpenTTD iOS: calling openttd_main");
 			int ret = openttd_main(std::span<std::string_view>{ params });
+
+			fwrite("OpenTTD iOS: openttd_main returned\n", 1, 34, stderr);
+			fflush(stderr);
 			os_log(OS_LOG_DEFAULT, "OpenTTD iOS: openttd_main returned %d", ret);
 
 			/* The game has shut down; leaving is all we can do. */
