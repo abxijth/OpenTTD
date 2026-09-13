@@ -35,7 +35,7 @@
 #	include "gfx_func.h"
 #endif /* WITH_ICU_I18N */
 
-#if defined(WITH_COCOA)
+#if defined(WITH_COCOA) || defined(WITH_IOS)
 #	include "os/macosx/string_osx.h"
 #endif
 
@@ -446,7 +446,7 @@ int StrNaturalCompare(std::string_view s1, std::string_view s2, bool ignore_garb
 	if (res != 0) return res - 2; // Convert to normal C return values.
 #endif
 
-#if defined(WITH_COCOA) && !defined(STRGEN) && !defined(SETTINGSGEN)
+#if (defined(WITH_COCOA) || defined(WITH_IOS)) && !defined(STRGEN) && !defined(SETTINGSGEN)
 	int res = MacOSStringCompare(s1, s2);
 	if (res != 0) return res - 2; // Convert to normal C return values.
 #endif
@@ -507,7 +507,7 @@ static int ICUStringContains(std::string_view str, std::string_view value, bool 
 	if (res >= 0) return res > 0;
 #endif
 
-#if defined(WITH_COCOA) && !defined(STRGEN) && !defined(SETTINGSGEN)
+#if (defined(WITH_COCOA) || defined(WITH_IOS)) && !defined(STRGEN) && !defined(SETTINGSGEN)
 	int res = MacOSStringContains(str, value, false);
 	if (res >= 0) return res > 0;
 #endif
@@ -534,7 +534,7 @@ static int ICUStringContains(std::string_view str, std::string_view value, bool 
 	if (res >= 0) return res > 0;
 #endif
 
-#if defined(WITH_COCOA) && !defined(STRGEN) && !defined(SETTINGSGEN)
+#if (defined(WITH_COCOA) || defined(WITH_IOS)) && !defined(STRGEN) && !defined(SETTINGSGEN)
 	int res = MacOSStringContains(str, value, true);
 	if (res >= 0) return res > 0;
 #endif
@@ -831,7 +831,7 @@ public:
 	}
 };
 
-#if defined(WITH_COCOA) && !defined(STRGEN) && !defined(SETTINGSGEN)
+#if (defined(WITH_COCOA) || defined(WITH_IOS)) && !defined(STRGEN) && !defined(SETTINGSGEN)
 /* static */ std::unique_ptr<StringIterator> StringIterator::Create()
 {
 	std::unique_ptr<StringIterator> i = OSXStringIterator::Create();

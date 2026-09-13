@@ -23,7 +23,9 @@ if (EMSCRIPTEN)
 endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
-set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
+if(APPLE AND NOT IOS)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
+endif()
 
 # Use GNUInstallDirs to allow customisation
 # but set our own default data and bin dir
@@ -163,13 +165,21 @@ if(APPLE)
 
     find_package(Iconv)
 
+    if(IOS)
+        find_library(UIKIT_LIBRARY UIKit)
+        find_library(OPENGLES_LIBRARY OpenGLES)
+        find_library(COREVIDEO_LIBRARY CoreVideo)
+    endif()
+
     find_library(AUDIOTOOLBOX_LIBRARY AudioToolbox)
     find_library(AUDIOUNIT_LIBRARY AudioUnit)
-    find_library(COCOA_LIBRARY Cocoa)
     find_library(QUARTZCORE_LIBRARY QuartzCore)
+    if(NOT IOS)
+        find_library(COCOA_LIBRARY Cocoa)
+    endif()
 endif()
 
-if(NOT EMSCRIPTEN AND NOT OPTION_DEDICATED)
+if(NOT EMSCRIPTEN AND NOT IOS AND NOT OPTION_DEDICATED)
     find_package(OpenGL COMPONENTS OpenGL)
 endif()
 
@@ -198,13 +208,21 @@ if(UNIX AND NOT APPLE AND NOT OPTION_DEDICATED)
     endif()
 endif()
 if(APPLE)
+    if(IOS)
+        if(NOT UIKIT_LIBRARY)
+            message(FATAL_ERROR "UIKit is required for this platform")
+        endif()
+        if(NOT OPENGLES_LIBRARY)
+            message(FATAL_ERROR "OpenGLES is required for this platform")
+        endif()
+    endif()
     if(NOT AUDIOTOOLBOX_LIBRARY)
         message(FATAL_ERROR "AudioToolbox is required for this platform")
     endif()
     if(NOT AUDIOUNIT_LIBRARY)
         message(FATAL_ERROR "AudioUnit is required for this platform")
     endif()
-    if(NOT COCOA_LIBRARY)
+    if(NOT IOS AND NOT COCOA_LIBRARY)
         message(FATAL_ERROR "Cocoa is required for this platform")
     endif()
     if(NOT QUARTZCORE_LIBRARY)
@@ -349,16 +367,36 @@ include(3rdparty/llvm/CheckAtomic)
 if(APPLE)
     link_package(Iconv TARGET Iconv::Iconv)
 
-    target_link_libraries(openttd_lib
-        ${AUDIOTOOLBOX_LIBRARY}
-        ${AUDIOUNIT_LIBRARY}
-        ${COCOA_LIBRARY}
-        ${QUARTZCORE_LIBRARY}
-    )
-
-    add_definitions(
-        -DWITH_COCOA
-    )
+    if(IOS)
+        target_link_libraries(openttd_lib
+            ${UIKIT_LIBRARY}
+            ${OPENGLES_LIBRARY}
+            ${AUDIOTOOLBOX_LIBRARY}
+            ${AUDIOUNIT_LIBRARY}
+            ${QUARTZCORE_LIBRARY}
+            ${COREVIDEO_LIBRARY}
+        )
+        add_definitions(
+            -DWITH_IOS
+            -DWITH_OPENGLES
+        )
+        if(NOT Iconv_FOUND)
+            # iconv is always available in the iOS system libraries; make sure
+            # the OTTD2FS()/FS2OTTD() file encoding helpers are compiled even
+            # when CMake's FindIconv cannot locate it in the SDK.
+            add_definitions(-DWITH_ICONV)
+        endif()
+    else()
+        target_link_libraries(openttd_lib
+            ${AUDIOTOOLBOX_LIBRARY}
+            ${AUDIOUNIT_LIBRARY}
+            ${COCOA_LIBRARY}
+            ${QUARTZCORE_LIBRARY}
+        )
+        add_definitions(
+            -DWITH_COCOA
+        )
+    endif()
 endif()
 
 if(EMSCRIPTEN)

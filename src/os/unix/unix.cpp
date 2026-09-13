@@ -201,7 +201,7 @@ void ShowOSErrorBox(std::string_view buf, bool)
 }
 #endif
 
-#ifndef WITH_COCOA
+#if !defined(WITH_COCOA) && !defined(WITH_IOS)
 std::optional<std::string> GetClipboardContents()
 {
 #ifdef WITH_SDL2

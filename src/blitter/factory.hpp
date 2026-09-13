@@ -115,7 +115,7 @@ public:
 	{
 #if defined(DEDICATED)
 		static const std::string_view default_blitter = "null";
-#elif defined(WITH_COCOA)
+#elif defined(WITH_COCOA) || defined(WITH_IOS)
 		static const std::string_view default_blitter = "32bpp-anim";
 #else
 		static const std::string_view default_blitter = "8bpp-optimized";

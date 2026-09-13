@@ -790,8 +790,21 @@ void DetermineBasePaths(std::string_view exe)
 	}
 #endif
 
-#if !defined(WITH_PERSONAL_DIR)
+#if defined(WITH_IOS)
+	/* The sandboxed iOS environment has no conventional home directory.
+	 * Store all user data in the (user-visible) Documents directory. */
+	extern std::string IosGetDocumentsDir();
+	tmp = IosGetDocumentsDir();
+	tmp += PERSONAL_DIR;
+	AppendPathSeparator(tmp);
+	_searchpaths[Searchpath::PersonalDir] = tmp;
+
+	tmp += "content_download";
+	AppendPathSeparator(tmp);
+	_searchpaths[Searchpath::AutodownloadPersonalDir] = tmp;
+#elif !defined(WITH_PERSONAL_DIR)
 	_searchpaths[Searchpath::PersonalDir].clear();
+	_searchpaths[Searchpath::AutodownloadPersonalDir].clear();
 #else
 	if (!homedir.empty()) {
 		tmp = std::move(homedir);
@@ -861,16 +874,32 @@ void DetermineBasePaths(std::string_view exe)
 		}
 	}
 
-#if !defined(GLOBAL_DATA_DIR)
+#if defined(WITH_COCOA)
+	_searchpaths[Searchpath::InstallationDir].clear();
+#elif defined(WITH_IOS)
+	extern void IosSetApplicationBundleDir();
+	IosSetApplicationBundleDir();
+
+	/* On iOS all game data ships inside the application bundle. Point
+	 * the installation / binary directories at the same data directory
+	 * so the bundled files are always found. */
+	_searchpaths[Searchpath::InstallationDir] = _searchpaths[Searchpath::ApplicationBundleDir];
+	_searchpaths[Searchpath::BinaryDir] = _searchpaths[Searchpath::ApplicationBundleDir];
+#elif !defined(GLOBAL_DATA_DIR)
 	_searchpaths[Searchpath::InstallationDir].clear();
 #else
 	tmp = GLOBAL_DATA_DIR;
 	AppendPathSeparator(tmp);
 	_searchpaths[Searchpath::InstallationDir] = std::move(tmp);
 #endif
-#ifdef WITH_COCOA
+
+#if defined(WITH_COCOA) || defined(WITH_IOS)
+#if defined(WITH_IOS)
+	IosSetApplicationBundleDir();
+#else
 extern void CocoaSetApplicationBundleDir();
 	CocoaSetApplicationBundleDir();
+#endif
 #else
 	_searchpaths[Searchpath::ApplicationBundleDir].clear();
 #endif

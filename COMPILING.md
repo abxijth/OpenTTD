@@ -97,6 +97,73 @@ make
 For more information on how to use CMake (including how to make Release builds),
 we urge you to read [their excellent manual](https://cmake.org/cmake/help/latest/guide/user-interaction/index.html).
 
+## iOS
+This is an experimental port. It requires a Mac with Xcode (and the iOS SDK)
+installed. There is no on-screen game data bundled with the build; OpenTTD
+looks for its data in the `Data` directory of the app bundle, and stores saves,
+settings and screenshots in the app's `Documents` directory.
+
+Configure with the iOS cross-compilation toolchain, then build:
+
+```bash
+# For a physical device:
+cmake -B build-ios \
+    -DCMAKE_TOOLCHAIN_FILE=os/ios/toolchain_ios.cmake \
+    -DIOS_PLATFORM=OS
+
+# Or for the iOS Simulator:
+cmake -B build-ios \
+    -DCMAKE_TOOLCHAIN_FILE=os/ios/toolchain_ios.cmake \
+    -DIOS_PLATFORM=SIMULATOR
+
+cmake --build build-ios -j "$(sysctl -n hw.logicalcpu)"
+```
+
+When building for a physical device the tools used to generate the language
+and settings files (`strgen`, `settingsgen`) are themselves a product of the
+build, which is a problem for cross-compilation. Configure a small native
+build first and point the iOS build at it:
+
+```bash
+cmake -B build-host -DOPTION_TOOLS_ONLY=ON
+cmake --build build-host -j "$(sysctl -n hw.logicalcpu)"
+
+# iOS device configure, as above, but with:
+#   -DHOST_BINARY_DIR="$PWD/build-host"
+```
+
+The Simulator build does not need this, as its tools run natively on the Mac.
+
+Optionally, generate an Xcode project instead of plain Makefiles by adding
+`-G Xcode`.
+
+Assemble the `OpenTTD.app` bundle (this copies the binary plus the game data
+from the build tree into the bundle):
+
+```bash
+os/ios/build_app.sh build-ios
+```
+
+Install on a booted simulator:
+
+```bash
+xcrun simctl install booted build-ios/OpenTTD.app
+```
+
+Installing on a physical device requires a developer signing identity (see
+`xcodebuild -showBuildSettings`, or `codesign -s "Apple Development: ..."`).
+
+Notes for the port:
+
+- Rendering is done by the `ios` video driver through OpenGL ES 2.0 submit via
+  a software (32bpp-anim) blitter. Input is touch-based: a single finger is the
+  left mouse button, a long press is the right mouse button, a pinch zooms and
+  a two-finger pan scrolls the map. The on-screen keyboard is shown whenever a
+  text entry control gets focus.
+- At the moment the game music (MIDI) is not enabled on iOS; in-game sound
+  effects are played through CoreAudio (`SoundDriver_iOS`).
+- Only the landscape orientation is supported.
+
 ## CMake Options
 
 Via CMake, several options can be influenced to get different types of

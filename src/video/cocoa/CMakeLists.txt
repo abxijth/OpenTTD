@@ -4,7 +4,7 @@ add_files(
     cocoa_v.mm
     cocoa_wnd.h
     cocoa_wnd.mm
-    CONDITION APPLE
+    CONDITION APPLE AND NOT IOS
 )
 
 add_files(

@@ -1,5 +1,12 @@
 include(GNUInstallDirs)
 
+if(IOS)
+    # The iOS application bundle is assembled by os/ios/build_app.sh.
+    # A generic install/CPack step does not apply to the sandboxed, code-signed
+    # iOS world, so skip it entirely.
+    return()
+endif()
+
 # If requested, use FHS layout; otherwise fall back to a flat layout.
 if(OPTION_INSTALL_FHS)
     set(BINARY_DESTINATION_DIR "${CMAKE_INSTALL_BINDIR}")

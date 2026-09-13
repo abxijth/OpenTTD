@@ -2109,7 +2109,7 @@ bool ReadLanguagePack(const LanguageMetadata *lang)
 	Win32SetCurrentLocaleName(_current_language->isocode);
 #endif
 
-#ifdef WITH_COCOA
+#if defined(WITH_COCOA) || defined(WITH_IOS)
 	extern void MacOSSetCurrentLocaleName(std::string_view iso_code);
 	MacOSSetCurrentLocaleName(_current_language->isocode);
 #endif
@@ -2385,7 +2385,7 @@ void CheckForMissingGlyphs(FontSizes fontsizes, MissingGlyphSearcher *searcher)
 	searcher->DetermineRequiredGlyphs(fontsizes);
 	bool bad_font = searcher->missing_fontsizes.Any();
 
-#if defined(WITH_FREETYPE) || defined(_WIN32) || defined(WITH_COCOA)
+#if defined(WITH_FREETYPE) || defined(_WIN32) || defined(WITH_COCOA) || defined(WITH_IOS)
 	if (bad_font) {
 		/* We found an unprintable character... lets try whether we can find
 		 * a fallback font that can print the characters in the current language. */
@@ -2428,7 +2428,7 @@ void CheckForMissingGlyphs(FontSizes fontsizes, MissingGlyphSearcher *searcher)
 		return;
 	}
 
-#if !(defined(WITH_ICU_I18N) && defined(WITH_HARFBUZZ)) && !defined(WITH_UNISCRIBE) && !defined(WITH_COCOA)
+#if !(defined(WITH_ICU_I18N) && defined(WITH_HARFBUZZ)) && !defined(WITH_UNISCRIBE) && !defined(WITH_COCOA) && !defined(WITH_IOS)
 	/*
 	 * For right-to-left languages we need the ICU library. If
 	 * we do not have support for that library we warn the user

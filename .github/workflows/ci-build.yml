@@ -75,6 +75,12 @@ jobs:
       full_arch: ${{ matrix.full_arch }}
       extra-cmake-parameters: ${{ matrix.extra-cmake-parameters }}
 
+  ios:
+    name: iOS
+
+    uses: ./.github/workflows/ci-ios.yml
+    secrets: inherit
+
   windows:
     strategy:
       fail-fast: false
@@ -97,6 +103,7 @@ jobs:
     - emscripten
     - linux
     - macos
+    - ios
     - windows
 
     if: always() && github.event_name == 'pull_request'

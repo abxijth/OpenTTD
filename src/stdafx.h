@@ -24,7 +24,11 @@
 #endif
 
 #if defined(__APPLE__)
-#	include "os/macosx/osx_stdafx.h"
+#	if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(MAC_OS_X_VERSION_10_0)
+#		include "os/ios/ios_stdafx.h"
+#	else
+#		include "os/macosx/osx_stdafx.h"
+#	endif
 #else
 /* It seems that we need to include stdint.h before anything else
  * We need INT64_MAX, which for most systems comes from stdint.h.

@@ -7,7 +7,7 @@ add_files(
 add_files(
     library_loader_unix.cpp
     unix.cpp
-    CONDITION UNIX
+    CONDITION UNIX OR IOS
 )
 
 add_files(
