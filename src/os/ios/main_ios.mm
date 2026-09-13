@@ -24,10 +24,32 @@
 #include <signal.h>
 
 #import <UIKit/UIKit.h>
+#import <os/log.h>
 
 #include "ios_main.h"
+#include "ios.h"
 
 #include "../../safeguards.h"
+
+/**
+ * Route OpenTTD's stdout/stderr (the game logs) into a file in the app's
+ * Documents directory so it can be retrieved from the Files app without a
+ * Mac. Unbuffered so nothing is lost on a crash.
+ */
+static void RedirectLogToFile()
+{
+	std::string dir = IosGetDocumentsDir();
+	if (dir.empty()) return;
+
+	std::string path = dir + "openttd.log";
+	if (freopen(path.c_str(), "w", stderr) != nullptr) {
+		setvbuf(stderr, nullptr, _IONBF, 0);
+	}
+	if (freopen(path.c_str(), "a", stdout) != nullptr) {
+		setvbuf(stdout, nullptr, _IONBF, 0);
+	}
+	fprintf(stderr, "OpenTTD iOS: logging to %s\n", path.c_str());
+}
 
 /**
  * Convert an Objective-C string to a C++ one.
@@ -73,6 +95,7 @@ std::string NSStringToCpp(NSString *str)
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+	os_log(OS_LOG_DEFAULT, "OpenTTD iOS: application did finish launching");
 	CGRect screenBounds = [ [ UIScreen mainScreen ] bounds ];
 	self.window = [ [ UIWindow alloc ] initWithFrame:screenBounds ];
 	self.window.backgroundColor = [ UIColor blackColor ];
@@ -98,6 +121,9 @@ std::string NSStringToCpp(NSString *str)
 {
 	NSThread *thread = [ [ NSThread alloc ] initWithBlock:^{
 		@autoreleasepool {
+			os_log(OS_LOG_DEFAULT, "OpenTTD iOS: game thread starting");
+			RedirectLogToFile();
+
 			CrashLog::InitialiseCrashLog();
 
 			SetRandomSeed(time(nullptr));
@@ -113,7 +139,9 @@ std::string NSStringToCpp(NSString *str)
 			std::vector<std::string_view> params;
 			for (const auto &arg : args) params.emplace_back(arg);
 
+			os_log(OS_LOG_DEFAULT, "OpenTTD iOS: calling openttd_main");
 			int ret = openttd_main(std::span<std::string_view>{ params });
+			os_log(OS_LOG_DEFAULT, "OpenTTD iOS: openttd_main returned %d", ret);
 
 			/* The game has shut down; leaving is all we can do. */
 			exit(ret);

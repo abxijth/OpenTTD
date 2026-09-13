@@ -45,6 +45,7 @@ jobs:
         cmake .. \
           -DCMAKE_TOOLCHAIN_FILE=os/ios/toolchain_ios.cmake \
           -DIOS_PLATFORM=OS \
+          -DCMAKE_BUILD_TYPE=Release \
           -DHOST_BINARY_DIR="$GITHUB_WORKSPACE/build-host" \
           ${{ inputs.extra-cmake-parameters }} \
           # EOF
