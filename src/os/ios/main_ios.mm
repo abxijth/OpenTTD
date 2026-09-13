@@ -48,7 +48,8 @@ static void RedirectLogToFile()
 	if (freopen(path.c_str(), "a", stdout) != nullptr) {
 		setvbuf(stdout, nullptr, _IONBF, 0);
 	}
-	fprintf(stderr, "OpenTTD iOS: logging to %s\n", path.c_str());
+	std::string msg = "OpenTTD iOS: logging to " + path + "\n";
+	fwrite(msg.data(), 1, msg.size(), stderr);
 }
 
 /**
