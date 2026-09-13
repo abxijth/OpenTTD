@@ -24,7 +24,7 @@
 #endif
 
 #if defined(__APPLE__)
-#	if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && !defined(MAC_OS_X_VERSION_10_0)
+#	if defined(WITH_IOS) || defined(__ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__)
 #		include "os/ios/ios_stdafx.h"
 #	else
 #		include "os/macosx/osx_stdafx.h"

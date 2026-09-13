@@ -28,6 +28,14 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v7
 
+    - name: Build host tools
+      run: |
+        mkdir build-host
+        cd build-host
+
+        cmake .. -DOPTION_TOOLS_ONLY=ON
+        cmake --build . -j $(sysctl -n hw.logicalcpu) --target strgen settingsgen
+
     - name: Build
       run: |
         mkdir build
@@ -37,6 +45,7 @@ jobs:
         cmake .. \
           -DCMAKE_TOOLCHAIN_FILE=os/ios/toolchain_ios.cmake \
           -DIOS_PLATFORM=OS \
+          -DHOST_BINARY_DIR="$GITHUB_WORKSPACE/build-host" \
           ${{ inputs.extra-cmake-parameters }} \
           # EOF
         echo "::endgroup::"
