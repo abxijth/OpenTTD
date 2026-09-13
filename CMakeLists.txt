@@ -172,9 +172,9 @@ if(APPLE)
     endif()
 
     find_library(AUDIOTOOLBOX_LIBRARY AudioToolbox)
-    find_library(AUDIOUNIT_LIBRARY AudioUnit)
     find_library(QUARTZCORE_LIBRARY QuartzCore)
     if(NOT IOS)
+        find_library(AUDIOUNIT_LIBRARY AudioUnit)
         find_library(COCOA_LIBRARY Cocoa)
     endif()
 endif()
@@ -372,7 +372,6 @@ if(APPLE)
             ${UIKIT_LIBRARY}
             ${OPENGLES_LIBRARY}
             ${AUDIOTOOLBOX_LIBRARY}
-            ${AUDIOUNIT_LIBRARY}
             ${QUARTZCORE_LIBRARY}
             ${COREVIDEO_LIBRARY}
         )
