@@ -58,19 +58,50 @@ jobs:
     - name: Assemble App Bundle
       run: os/ios/build_app.sh build build/app
 
+    - name: Sign App (ad-hoc)
+      shell: bash
+      run: |
+        set -euxo pipefail
+        APP="build/app/OpenTTD.app"
+        test -f "$APP/openttd" || { echo "::error::$APP/openttd missing"; exit 1; }
+
+        # Ad-hoc signature: no Apple Developer certificate is available in CI.
+        # Sideloading tools (Sideloadly/AltStore/SideStore/TrollStore) re-sign
+        # over this with the user's own identity at install time.
+        codesign --force --deep --sign - --entitlements os/ios/entitlements.plist \
+                --timestamp=none --verbose=4 "$APP"
+
+        # Fail the job if the signature did not actually take.
+        codesign --verify --deep --strict --verbose=4 "$APP"
+
+        # Belt and braces: codesign -dv must not report an unsigned object.
+        if codesign -dv "$APP" 2>&1 | grep -q "not signed at all"; then
+            echo "::error::codesign -dv reports 'code object is not signed at all'"
+            exit 1
+        fi
+
+        # Machine-parse the embedded signature blob: must exist, be non-empty
+        # and carry the 0xfade0cc0 CSMAGIC_EMBEDDED_SIGNATURE magic.
+        python3 os/ios/check_codesign.py "$APP/openttd"
+
     - name: Package IPA
       run: |
         cd build/app
         mkdir -p Payload
         cp -R OpenTTD.app Payload/
-        zip -qrX OpenTTD.ipa Payload
-        ls -la
+        rm -rf Payload/OpenTTD.app/__MACOSX Payload/OpenTTD.app/.DS_Store
+        zip -qrX OpenTTD-iOS-arm64.ipa Payload
+
+        # The archive must be a proper IPA: a Payload/ folder wrapping the .app.
+        unzip -l OpenTTD-iOS-arm64.ipa | grep -q "Payload/OpenTTD.app" || {
+            echo "::error::IPA is missing Payload/OpenTTD.app"
+            exit 1
+        }
+        ls -la OpenTTD-iOS-arm64.ipa
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: OpenTTD-iOS-arm64
-        path: |
-          build/app/OpenTTD.ipa
-          build/app/OpenTTD.app
+        path: build/app/OpenTTD-iOS-arm64.ipa
         if-no-files-found: error
