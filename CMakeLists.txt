@@ -169,6 +169,8 @@ if(APPLE)
         find_library(UIKIT_LIBRARY UIKit)
         find_library(OPENGLES_LIBRARY OpenGLES)
         find_library(COREVIDEO_LIBRARY CoreVideo)
+        find_library(COREFOUNDATION_LIBRARY CoreFoundation)
+        find_library(FOUNDATION_LIBRARY Foundation)
     endif()
 
     find_library(AUDIOTOOLBOX_LIBRARY AudioToolbox)
@@ -214,6 +216,12 @@ if(APPLE)
         endif()
         if(NOT OPENGLES_LIBRARY)
             message(FATAL_ERROR "OpenGLES is required for this platform")
+        endif()
+        if(NOT COREFOUNDATION_LIBRARY)
+            message(FATAL_ERROR "CoreFoundation is required for this platform")
+        endif()
+        if(NOT FOUNDATION_LIBRARY)
+            message(FATAL_ERROR "Foundation is required for this platform")
         endif()
     endif()
     if(NOT AUDIOTOOLBOX_LIBRARY)
@@ -374,6 +382,8 @@ if(APPLE)
             ${AUDIOTOOLBOX_LIBRARY}
             ${QUARTZCORE_LIBRARY}
             ${COREVIDEO_LIBRARY}
+            ${COREFOUNDATION_LIBRARY}
+            ${FOUNDATION_LIBRARY}
         )
         add_definitions(
             -DWITH_IOS
