@@ -87,7 +87,7 @@ void OSOpenBrowser(const std::string &url)
 	UIApplication *app = [ UIApplication sharedApplication ];
 	if (app != nil && ns_url != nil) {
 		if ([ app respondsToSelector:@selector(openURL:options:completionHandler:) ]) {
-			[ app openURL:ns_url options:@{ UIApplicationOpenURLOptionsExternalApplicationKey : @YES } completionHandler:nil ];
+			[ app openURL:ns_url options:@{} completionHandler:nil ];
 		} else {
 			[ app openURL:ns_url ];
 		}
