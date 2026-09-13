@@ -63,7 +63,9 @@ def check(path):
                 fail(f"signature blob is empty (datasize={datasize})")
             if dataoff + datasize > len(data):
                 fail("signature blob extends past end of file")
-            blob_magic, blob_len = struct.unpack_from("<II", data, dataoff)
+            # The embedded Code Signature blob is big-endian, even though the
+            # Mach-O load command that points to it is little-endian.
+            blob_magic, blob_len = struct.unpack_from(">II", data, dataoff)
             if blob_magic != CSMAGIC_EMBEDDED_SIGNATURE:
                 fail(
                     f"bad signature blob magic 0x{blob_magic:08x} "
