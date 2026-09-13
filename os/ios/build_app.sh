@@ -21,9 +21,11 @@ if [ "$#" -lt 1 ]; then
 fi
 
 BUILD_DIR="$(cd "$1" && pwd)"
+mkdir -p "${2:-$(dirname "$BUILD_DIR")}"
 OUTPUT_DIR="$(cd "${2:-$(dirname "$BUILD_DIR")}" && pwd)"
 
 SOURCE_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+BINARY_NAME="${BINARY_NAME:-openttd}"
 
 BUNDLE_DIR="$OUTPUT_DIR/OpenTTD.app"
 GAME_DATA_DIR="$BUNDLE_DIR/Data"    # location OpenTTD looks for game data on iOS
@@ -41,8 +43,17 @@ echo "Assembling $BUNDLE_DIR..."
 rm -rf "$BUNDLE_DIR"
 mkdir -p "$GAME_DATA_DIR"
 
-# The OpenTTD iOS binary.
-cp "$BUILD_DIR/openttd" "$BUNDLE_DIR/openttd"
+# The OpenTTD iOS binary. When CMake is configured for a GUI (bundle) target it
+# places the binary inside an "<name>.app" directory next to the plain binary.
+APP_BINARY="$BUILD_DIR/$BINARY_NAME"
+if [ ! -x "$APP_BINARY" ]; then
+    APP_BINARY="$(find "$BUILD_DIR" -maxdepth 4 -type f -name "$BINARY_NAME" -path '*.app/*' | head -1)"
+fi
+if [ ! -x "$APP_BINARY" ]; then
+    echo "Could not find the OpenTTD binary in $BUILD_DIR" >&2
+    exit 1
+fi
+cp "$APP_BINARY" "$BUNDLE_DIR/openttd"
 chmod +x "$BUNDLE_DIR/openttd"
 
 # Game data: baseset, lang and standard subdirectories.
