@@ -58,9 +58,19 @@ jobs:
     - name: Assemble App Bundle
       run: os/ios/build_app.sh build build/app
 
+    - name: Package IPA
+      run: |
+        cd build/app
+        mkdir -p Payload
+        cp -R OpenTTD.app Payload/
+        zip -qrX OpenTTD.ipa Payload
+        ls -la
+
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: OpenTTD-iOS-arm64
-        path: build/app/OpenTTD.app
+        path: |
+          build/app/OpenTTD.ipa
+          build/app/OpenTTD.app
         if-no-files-found: error

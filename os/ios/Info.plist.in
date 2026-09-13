@@ -42,8 +42,12 @@
         <string>13.0</string>
         <key>UIRequiresFullScreen</key>
         <true/>
-        <key>UILaunchStoryboardName</key>
-        <string></string>
+        <key>UIStatusBarHidden</key>
+        <true/>
+        <key>UIViewControllerBasedStatusBarAppearance</key>
+        <false/>
+        <key>UILaunchScreen</key>
+        <dict/>
         <key>UISupportedInterfaceOrientations</key>
         <array>
                 <string>UIInterfaceOrientationLandscapeLeft</string>
