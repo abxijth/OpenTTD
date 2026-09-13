@@ -29,8 +29,6 @@
 
 #include "../../safeguards.h"
 
-static UIView *_host_view;
-
 /**
  * Convert an Objective-C string to a C++ one.
  * @param str The string to convert.
@@ -87,7 +85,7 @@ std::string NSStringToCpp(NSString *str)
 	hostView.multipleTouchEnabled = YES;
 	hostView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	[ rootController.view addSubview:hostView ];
-	_host_view = hostView;
+	IosSetHostView(hostView);
 
 	[ self.window makeKeyAndVisible ];
 
@@ -143,47 +141,6 @@ std::string NSStringToCpp(NSString *str)
 }
 
 @end
-
-/**
- * Run a function on the main thread (asynchronously).
- * @param block The block to run.
- */
-void IosRunOnMain(dispatch_block_t block)
-{
-	dispatch_async(dispatch_get_main_queue(), block);
-}
-
-/**
- * Run a function on the main thread (synchronously).
- * @param block The block to run.
- */
-void IosRunSyncOnMain(dispatch_block_t block)
-{
-	if ([ NSThread isMainThread ]) {
-		block();
-		return;
-	}
-
-	dispatch_sync(dispatch_get_main_queue(), block);
-}
-
-/**
- * The host view that the video driver attaches its layer to.
- * @return The host view, or nil.
- */
-UIView *IosGetHostView()
-{
-	return _host_view;
-}
-
-/**
- * The content scaling factor of the main screen (1.0, 2.0 or 3.0).
- * @return The scaling factor.
- */
-CGFloat IosGetScreenScale()
-{
-	return [ [ UIScreen mainScreen ] scale ];
-}
 
 int CDECL main(int argc, char *argv[])
 {

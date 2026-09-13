@@ -20,6 +20,7 @@ void IosRunOnMain(dispatch_block_t block);
 void IosRunSyncOnMain(dispatch_block_t block);
 
 UIView *IosGetHostView();
+void IosSetHostView(UIView *view);
 CGFloat IosGetScreenScale();
 
 void IosNotifyHostViewSizeChanged(CGFloat width, CGFloat height);

@@ -20,6 +20,7 @@
 #include "../../fileio_func.h"
 #include "../../3rdparty/fmt/format.h"
 #include "ios.h"
+#include "ios_main.h"
 #include <pthread.h>
 #include <UIKit/UIKit.h>
 
@@ -193,4 +194,56 @@ void MacOSSetThreadName(const std::string &name)
 uint64_t MacOSGetPhysicalMemory()
 {
 	return [ [ NSProcessInfo processInfo ] physicalMemory ];
+}
+
+static UIView *_host_view;
+
+/**
+ * Run a function on the main thread (asynchronously).
+ * @param block The block to run.
+ */
+void IosRunOnMain(dispatch_block_t block)
+{
+	dispatch_async(dispatch_get_main_queue(), block);
+}
+
+/**
+ * Run a function on the main thread (synchronously).
+ * @param block The block to run.
+ */
+void IosRunSyncOnMain(dispatch_block_t block)
+{
+	if ([ NSThread isMainThread ]) {
+		block();
+		return;
+	}
+
+	dispatch_sync(dispatch_get_main_queue(), block);
+}
+
+/**
+ * The host view that the video driver attaches its layer to.
+ * @return The host view, or nil.
+ */
+UIView *IosGetHostView()
+{
+	return _host_view;
+}
+
+/**
+ * Remember the host view that the video driver attaches its layer to.
+ * @param view The host view.
+ */
+void IosSetHostView(UIView *view)
+{
+	_host_view = view;
+}
+
+/**
+ * The content scaling factor of the main screen (1.0, 2.0 or 3.0).
+ * @return The scaling factor.
+ */
+CGFloat IosGetScreenScale()
+{
+	return [ [ UIScreen mainScreen ] scale ];
 }
