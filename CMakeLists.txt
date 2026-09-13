@@ -171,6 +171,8 @@ if(APPLE)
         find_library(COREVIDEO_LIBRARY CoreVideo)
         find_library(COREFOUNDATION_LIBRARY CoreFoundation)
         find_library(FOUNDATION_LIBRARY Foundation)
+        find_library(COREGRAPHICS_LIBRARY CoreGraphics)
+        find_library(CORETEXT_LIBRARY CoreText)
     endif()
 
     find_library(AUDIOTOOLBOX_LIBRARY AudioToolbox)
@@ -222,6 +224,12 @@ if(APPLE)
         endif()
         if(NOT FOUNDATION_LIBRARY)
             message(FATAL_ERROR "Foundation is required for this platform")
+        endif()
+        if(NOT COREGRAPHICS_LIBRARY)
+            message(FATAL_ERROR "CoreGraphics is required for this platform")
+        endif()
+        if(NOT CORETEXT_LIBRARY)
+            message(FATAL_ERROR "CoreText is required for this platform")
         endif()
     endif()
     if(NOT AUDIOTOOLBOX_LIBRARY)
@@ -384,6 +392,8 @@ if(APPLE)
             ${COREVIDEO_LIBRARY}
             ${COREFOUNDATION_LIBRARY}
             ${FOUNDATION_LIBRARY}
+            ${COREGRAPHICS_LIBRARY}
+            ${CORETEXT_LIBRARY}
         )
         add_definitions(
             -DWITH_IOS
