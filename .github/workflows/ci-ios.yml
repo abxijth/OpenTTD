@@ -56,8 +56,23 @@ jobs:
         cmake --build . -j $(sysctl -n hw.logicalcpu)
         echo "::endgroup::"
 
+    - name: Fetch base sets (OpenGFX/OpenSFX)
+      shell: bash
+      run: |
+        set -euxo pipefail
+        mkdir -p base-sets
+        # The -all.zip files each contain a single base-set .tar, which OpenTTD
+        # reads directly from Data/baseset/ (graphics+sounds support tars there).
+        curl -fsSL https://cdn.openttd.org/opengfx-releases/8.0/opengfx-8.0-all.zip -o ogfx.zip
+        unzip -o ogfx.zip -d .
+        curl -fsSL https://cdn.openttd.org/opensfx-releases/1.0.3/opensfx-1.0.3-all.zip -o osfx.zip
+        unzip -o osfx.zip -d .
+        mv -f opengfx-8.0.tar opensfx-1.0.3.tar base-sets/
+
     - name: Assemble App Bundle
       run: os/ios/build_app.sh build build/app
+      env:
+        IOS_BASESET_TAR_DIR: ${{ github.workspace }}/base-sets
 
     - name: Sign App (ad-hoc)
       shell: bash

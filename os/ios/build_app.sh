@@ -60,6 +60,16 @@ chmod +x "$BUNDLE_DIR/openttd"
 copy_dir "$BUILD_DIR/baseset"
 copy_dir "$BUILD_DIR/lang"
 
+# Portable base sets (OpenGFX/OpenSFX ...) ship as .tar archives. OpenTTD scans
+# Data/baseset/ for them (graphics and sounds support tars there), which keeps
+# the game playable offline on first launch.
+if [ -n "${IOS_BASESET_TAR_DIR:-}" ] && [ -d "$IOS_BASESET_TAR_DIR" ]; then
+    if ls "$IOS_BASESET_TAR_DIR"/*.tar >/dev/null 2>&1; then
+        mkdir -p "$GAME_DATA_DIR/baseset"
+        cp -f "$IOS_BASESET_TAR_DIR"/*.tar "$GAME_DATA_DIR/baseset/"
+    fi
+fi
+
 # AI, GameScripts and language script directories ship from the source tree.
 copy_dir "$SOURCE_DIR/bin/ai"
 copy_dir "$SOURCE_DIR/bin/game"
